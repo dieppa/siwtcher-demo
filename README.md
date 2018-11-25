@@ -19,9 +19,7 @@ Default service mode is local, so in case of local instance, mode is not needed
   java -jar MainApp/target/MainApp-1.0-SNAPSHOT.jar
   ``
   
- ### Running micro-services
- 
- #### Client micro-service 
+ ### Running client micro-service and product as remote service(injected http client)
  
   ``
   java -jar MainApp/target/MainApp-1.0-SNAPSHOT.jar --spring.config.name=client-local-and-product-remote
