@@ -21,13 +21,15 @@ import java.util.stream.Stream;
 public class ProductConfiguration extends ServiceConfiguration {
 
 
+    private static final String SERVICE_NAME = "product";
+
     public ProductConfiguration() {
-        super("product");
+        super(SERVICE_NAME, ProductServiceImpl.class);
     }
 
     @Bean
     public ProductService getProductService() {
-        return (ProductService) getService(ProductServiceImpl.class);
+        return (ProductService) getService(SERVICE_NAME, ProductServiceImpl.class);
     }
 
 }

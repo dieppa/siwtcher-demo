@@ -8,13 +8,15 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class ClientConfiguration  extends ServiceConfiguration {
 
+    private static final String SERVICE_NAME = "client";
+
     public ClientConfiguration() {
-        super("client");
+        super(SERVICE_NAME, ClientServiceImpl.class);
     }
 
     @Bean
     public ClientService getClientService() {
-        return (ClientService) getService(ClientServiceImpl.class);
+        return (ClientService) getServiceDefault();
     }
 
     @Bean

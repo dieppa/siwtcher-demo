@@ -3,6 +3,8 @@ package io.cloudyrock.switcher.api.util;
 import feign.Feign;
 import feign.jackson.JacksonDecoder;
 import feign.jackson.JacksonEncoder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.env.Environment;
@@ -14,7 +16,9 @@ import java.util.stream.Stream;
 
 public class ServiceConfiguration {
 
+    protected final static Logger LOG = LoggerFactory.getLogger(ServiceConfiguration.class);
 
+    private final static String LOG_PREFIX = "[SERVICE-CONFIG] - ";
     private final static String REMOTE_MODE = "remote";
     private final static String HOST_PROP = "remoteHost";
     private final static String SERVICES_PREFIX_CONFIG_PROP = "services.";
@@ -22,7 +26,8 @@ public class ServiceConfiguration {
     private final static String SERVICE_HOST_PROP_TEMPLATE = SERVICES_PREFIX_CONFIG_PROP + "%s." + HOST_PROP;
     private final static String TEMPLATE_HOST_ERROR = HOST_PROP + " property for service %s cannot be null as remote mode is set";
 
-    private final String serviceName;
+    private final String defaultServiceName;
+    private final Class defaultServiceClass;
 
     @Autowired
     protected Environment env;
@@ -30,23 +35,50 @@ public class ServiceConfiguration {
     @Autowired
     protected ApplicationContext context;
 
-    protected ServiceConfiguration(String serviceName) {
-        this.serviceName = serviceName;
+    //Construction without default service
+    protected ServiceConfiguration() {
+        this.defaultServiceName = null;
+        this.defaultServiceClass = null;
     }
 
-    protected Object getService(Class serviceClass) {
-        return isRemote() ? getRemoteInstance(serviceClass) : getLocalInstance(serviceClass);
+
+    //Construction with default service
+    protected ServiceConfiguration(String defaultServiceName, Class defaultServiceClass) {
+        this.defaultServiceName = defaultServiceName;
+        this.defaultServiceClass = defaultServiceClass;
     }
 
-    private boolean isRemote() {
+    @SuppressWarnings("SameParameterValue")
+    protected Object getService(String serviceName, Class serviceClass) {
+        return isRemote(serviceName)
+                ? getRemoteInstance(serviceName, serviceClass)
+                : getLocalInstance(serviceName, serviceClass);
+    }
+
+    protected Object getServiceDefault() {
+        checkDefaultParameters();
+        return isRemote(defaultServiceName)
+                ? getRemoteInstance(defaultServiceName, defaultServiceClass)
+                : getLocalInstance(defaultServiceName, defaultServiceClass);
+    }
+
+    private void checkDefaultParameters() {
+        if(defaultServiceClass == null || StringUtils.isEmpty(defaultServiceName)) {
+            throw new IllegalArgumentException("To use getServiceDefault() method, configuration needs to be " +
+                    "initialised with default serviceName and serviceClass");
+        }
+    }
+
+    private boolean isRemote(String serviceName) {
         final String serviceMode = String.format(SERVICE_MODE_PROP_TEMPLATE, serviceName);
-        final String remoteHost = getRemoteHost();
+        final String remoteHost = getRemoteHost(serviceName);
         return REMOTE_MODE.equals(serviceMode) || StringUtils.isEmpty(serviceMode) && !StringUtils.isEmpty(remoteHost);
 
     }
 
     @SuppressWarnings("unchecked")
-    private Object getLocalInstance(Class serviceClass) {
+    private Object getLocalInstance(String serviceName, Class serviceClass) {
+        LOG.debug("{} Starting building local instance for {} ", LOG_PREFIX, serviceName);
         final Constructor constructor = serviceClass.getConstructors()[0];
         final Class<?>[] parameterTypes = constructor.getParameterTypes();
         final Object[] parameters = new Object[parameterTypes.length];
@@ -54,6 +86,8 @@ public class ServiceConfiguration {
             parameters[i] = context.getBean(parameterTypes[i]);
         }
         try {
+
+            LOG.info("{} Built local instance for {} ", LOG_PREFIX, serviceName);
             return constructor.newInstance(parameters);
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
             throw new RuntimeException(e);
@@ -61,19 +95,22 @@ public class ServiceConfiguration {
     }
 
     @SuppressWarnings("unchecked")
-    private Object getRemoteInstance(Class serviceClass) {
-        final String host = getRemoteHost();
+    private Object getRemoteInstance(String serviceName, Class serviceClass) {
+        LOG.debug("{} Starting building remote instance for {} ", LOG_PREFIX, serviceName);
+        final String host = getRemoteHost(serviceName);
         if (StringUtils.isEmpty(host)) {
             throw new IllegalArgumentException(String.format(TEMPLATE_HOST_ERROR, serviceName));
         }
         final Class serviceApi = getServiceApi(serviceClass);
-        return Feign.builder()
+        Object service=  Feign.builder()
                 .encoder(new JacksonEncoder())
                 .decoder(new JacksonDecoder())
                 .target(serviceApi, host);
+        LOG.info("{} Built remote instance for {} ", LOG_PREFIX, serviceName);
+        return service;
     }
 
-    private String getRemoteHost() {
+    private String getRemoteHost(String serviceName) {
         return env.getProperty(String.format(SERVICE_HOST_PROP_TEMPLATE, serviceName));
     }
 
