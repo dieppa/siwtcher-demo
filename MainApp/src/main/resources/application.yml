@@ -1,0 +1,9 @@
+#Default mode -> local
+services:
+  product:
+    mode: local
+  client:
+    mode: remote
+    host: http://localhost:8081
+server:
+  port: 8080
