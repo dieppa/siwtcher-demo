@@ -1,0 +1,20 @@
+#Default mode -> local
+services:
+    product:
+        mode: remote
+        remoteHost: http://localhost:8082
+    other-product:
+        mode: remote
+        remoteHost: http://localhost:8082
+    other-product-2:
+        mode: remote
+        remoteHost: http://localhost:8082
+    client:
+        mode: remote
+        remoteHost: http://localhost:8083
+    other-client:
+        mode: remote
+        remoteHost: http://localhost:8083
+
+server:
+    port: 8081

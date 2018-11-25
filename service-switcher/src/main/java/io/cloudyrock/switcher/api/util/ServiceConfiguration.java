@@ -70,9 +70,9 @@ public class ServiceConfiguration {
     }
 
     private boolean isRemote(String serviceName) {
-        final String serviceMode = String.format(SERVICE_MODE_PROP_TEMPLATE, serviceName);
-        final String remoteHost = getRemoteHost(serviceName);
-        return REMOTE_MODE.equals(serviceMode) || StringUtils.isEmpty(serviceMode) && !StringUtils.isEmpty(remoteHost);
+        final String serviceMode = getServiceMode(serviceName);
+        return REMOTE_MODE.equals(serviceMode) ||
+                StringUtils.isEmpty(serviceMode) && !StringUtils.isEmpty(getRemoteHost(serviceName));
 
     }
 
@@ -110,10 +110,6 @@ public class ServiceConfiguration {
         return service;
     }
 
-    private String getRemoteHost(String serviceName) {
-        return env.getProperty(String.format(SERVICE_HOST_PROP_TEMPLATE, serviceName));
-    }
-
     private Class getServiceApi(Class serviceClass) {
         Class[] interfaces = serviceClass.getInterfaces();
         if (interfaces == null || interfaces.length < 1) {
@@ -129,6 +125,14 @@ public class ServiceConfiguration {
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("Service class " + serviceClass.getName() + " implements more " +
                         "than one interface, but none of them is annotated with @ServiceApi"));
+    }
+
+    private String getRemoteHost(String serviceName) {
+        return env.getProperty(String.format(SERVICE_HOST_PROP_TEMPLATE, serviceName));
+    }
+
+    private String getServiceMode(String serviceName) {
+        return env.getProperty(String.format(SERVICE_MODE_PROP_TEMPLATE, serviceName));
     }
 
 }

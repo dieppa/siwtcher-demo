@@ -5,29 +5,28 @@ Proof of concept of a little framework which allows projects with multiple modul
 
 ## Running examples
 
+Default service mode is local, so in case of local instance, mode is not needed
+
 ### Running monolithic 
 
- ``
- java -jar MainApp/target/MainApp-1.0-SNAPSHOT.jar --services.mode=local 
-                                                   --server.port=8080
- ``
- 
+  ``
+  java -jar MainApp/target/MainApp-1.0-SNAPSHOT.jar --spring.config.name=all-services-local
+  ``
+ or just 
+  ``
+  java -jar MainApp/target/MainApp-1.0-SNAPSHOT.jar
+  ``
+  
  ### Running micro-services
  
  #### Client micro-service 
  
   ``
-  java -jar MainApp/target/MainApp-1.0-SNAPSHOT.jar --services.client.mode=local
-                                                    --services.product.mode=remote
-                                                    --services.product.host=http://localhost:8082
-                                                    --server.port=8081
+  java -jar MainApp/target/MainApp-1.0-SNAPSHOT.jar --spring.config.name=client-local-and-product-remote
   ``
   
 #### Product micro-service 
 
 ``
-  java -jar MainApp/target/MainApp-1.0-SNAPSHOT.jar --services.client.mode=remote
-                                                    --services.client.host=http://localhost:8081
-                                                    --services.product.mode=local
-                                                    --server.port=8082
+    java -jar MainApp/target/MainApp-1.0-SNAPSHOT.jar --spring.config.name=client-local-and-product-remote
 ``

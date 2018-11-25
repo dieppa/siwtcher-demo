@@ -1,5 +1,7 @@
 package client;
 
+import api.OtherProductService;
+import api.OtherProductService2;
 import api.ProductService;
 import feign.Feign;
 import feign.jackson.JacksonDecoder;
@@ -22,14 +24,31 @@ public class ProductConfiguration extends ServiceConfiguration {
 
 
     private static final String SERVICE_NAME = "product";
+    private static final String OTHER_SERVICE_NAME = "other-product";
+    private static final String OTHER_SERVICE_2_NAME = "other-product-2";
 
     public ProductConfiguration() {
-        super(SERVICE_NAME, ProductServiceImpl.class);
+        //initializing config without default service, it will be passed afterward
+        super();
     }
 
     @Bean
     public ProductService getProductService() {
+        //serviceName and class is needed as they weren't passed at construction time
         return (ProductService) getService(SERVICE_NAME, ProductServiceImpl.class);
     }
+
+    @Bean
+    public OtherProductService getOtherProductService() {
+        //serviceName and class is needed as they weren't passed at construction time
+        return (OtherProductService) getService(OTHER_SERVICE_NAME, OtherProductServiceImpl.class);
+    }
+
+    @Bean
+    public OtherProductService2 getOtherProduct2Service() {
+        //serviceName and class is needed as they weren't passed at construction time
+        return (OtherProductService2) getService(OTHER_SERVICE_2_NAME, OtherProductService2Impl.class);
+    }
+
 
 }

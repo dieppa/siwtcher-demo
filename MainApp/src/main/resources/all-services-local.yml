@@ -1,0 +1,4 @@
+#Default mode -> local
+
+server:
+    port: 8081
