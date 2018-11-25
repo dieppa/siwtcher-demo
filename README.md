@@ -12,7 +12,9 @@ Default service mode is local, so in case of local instance, mode is not needed
   ``
   java -jar MainApp/target/MainApp-1.0-SNAPSHOT.jar --spring.config.name=all-services-local
   ``
+  
  or just 
+ 
   ``
   java -jar MainApp/target/MainApp-1.0-SNAPSHOT.jar
   ``
@@ -25,8 +27,3 @@ Default service mode is local, so in case of local instance, mode is not needed
   java -jar MainApp/target/MainApp-1.0-SNAPSHOT.jar --spring.config.name=client-local-and-product-remote
   ``
   
-#### Product micro-service 
-
-``
-    java -jar MainApp/target/MainApp-1.0-SNAPSHOT.jar --spring.config.name=client-local-and-product-remote
-``
